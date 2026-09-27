@@ -248,3 +248,86 @@ az extension show --name azure-devops --output table
 | Docker Desktop | https://www.docker.com/products/docker-desktop/ |
 | Minikube | https://minikube.sigs.k8s.io/docs/ |
 | Terraform | https://developer.hashicorp.com/terraform/install |
+
+
+Azure DevOps – Create and Manage Personal Access Token (PAT)
+A Personal Access Token (PAT) is used to authenticate Azure DevOps CLI commands without entering your username and password each time.
+1. Create an Azure DevOps Organization
+Open Azure DevOps
+ and sign in with your Microsoft account. Create an organization and a project.
+Example:
+- Organization: cloudnautic
+- Project: project
+- URL: https://dev.azure.com/cloudnautic/project
+
+2. Install and Configure Azure DevOps CLI
+Install the Azure DevOps extension:
+```
+az extension add --name azure-devops
+```
+
+Configure the default organization and project:
+```
+az devops configure --defaults \
+  organization=https://dev.azure.com/cloudnautic \
+  project=project
+```
+
+Note: Use the organization URL, not the project URL, for the organization parameter.
+Verify the configuration:
+```
+az devops configure --list
+```
+
+3. Create a Personal Access Token
+Azure DevOps Portal
+1. Open https://dev.azure.com/cloudnautic
+2. Click User settings in the upper-right corner.
+3. Select Personal access tokens.
+4. Click New Token.
+5. Enter token name: mytoken.
+6. Select the organization and expiration date.
+7. Select the minimum permissions required. For this lab, use Project and Team: Read to list projects.
+8. Click Create and immediately copy the generated token.
+
+Keep your PAT secure. Azure DevOps displays its value only when it is created. Do not commit it to GitHub or include it in screenshots.
+4. Log In Using the Token
+Open your terminal:
+```
+az devops login \
+  --organization https://dev.azure.com/cloudnautic
+```
+
+Paste your PAT when prompted and press Enter.
+Alternatively, authenticate using an environment variable without placing the token directly in a command:
+read -s AZURE_DEVOPS_EXT_PAT
+export AZURE_DEVOPS_EXT_PAT
+
+
+Paste the token at the prompt and press Enter. The environment variable will be available to the Azure DevOps CLI for that shell session.
+5. Verify Authentication
+List the available projects:
+```
+az devops project list --output table
+```
+
+Get information about your project:
+```
+az devops project show \
+  --project project \
+  --output table
+```
+
+6. Maintain and Revoke Tokens
+To manage existing tokens, return to User settings → Personal access tokens in Azure DevOps.
+You can create a replacement token, regenerate an existing token where supported, or revoke a token that is no longer required. Use short expiration periods and rotate tokens before they expire.
+To remove stored CLI authentication:
+az devops logout \
+  --organization https://dev.azure.com/cloudnautic
+
+
+If you used the environment variable, clear it:
+unset AZURE_DEVOPS_EXT_PAT
+
+
+For production automation, prefer Microsoft Entra identities or managed identities where supported rather than long-lived PATs.
